@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroFlow — Avaliação de Neuropatia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#000000;--surface:#111;--surface2:#1a1a1a;--border:#252525;
+  --accent:#FF6B00;--accent2:#FF9500;
+  --text:#ffffff;--muted:#666;--success:#FF6B00;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;}
+
+/* ── PROGRESS ── */
+#progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:#1a1a1a;z-index:200;}
+#progress-fill{height:100%;background:linear-gradient(90deg,#FF6B00,#FF9500);width:0%;transition:width .5s cubic-bezier(.4,0,.2,1);}
+#top-bar{position:fixed;top:0;left:0;right:0;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:199;}
+#brand{font-size:13px;font-weight:800;color:var(--accent);letter-spacing:.12em;margin-top:3px;}
+#step-counter{font-size:11px;color:var(--muted);letter-spacing:.06em;margin-top:3px;}
+
+/* ── CONTAINER ── */
+#quiz-container{width:100%;max-width:560px;padding:72px 20px 60px;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+/* ── STEP ── */
+.step{display:none;flex-direction:column;align-items:center;width:100%;animation:fadeUp .38s ease;}
+.step.active{display:flex;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── TITLES ── */
+.step-title{font-size:clamp(18px,5vw,24px);font-weight:700;text-align:center;margin-bottom:6px;line-height:1.35;letter-spacing:-.01em;}
+.step-subtitle{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;line-height:1.5;}
+
+/* ── OPTION CARDS ── */
+.options-list{display:flex;flex-direction:column;gap:9px;width:100%;}
+.opt{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 18px;cursor:pointer;transition:all .18s ease;display:flex;align-items:center;gap:14px;text-align:left;user-select:none;}
+.opt:hover{border-color:var(--accent);background:#141414;transform:translateX(3px);}
+.opt.selected{border-color:var(--accent);background:rgba(255,107,0,.08);box-shadow:0 0 0 1px rgba(255,107,0,.2);}
+.opt .emo{font-size:21px;width:30px;text-align:center;flex-shrink:0;}
+.opt .txt{flex:1;}
+.opt .lbl{font-size:14px;font-weight:600;color:var(--text);}
+.opt .dsc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;}
+
+/* age grid */
+.age-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+.age-grid .opt{justify-content:center;font-size:20px;font-weight:800;padding:22px;letter-spacing:.04em;flex-direction:column;gap:0;}
+
+/* ── CHECKBOX (multi) ── */
+.opt.multi{position:relative;padding-right:50px;}
+.opt.multi::after{content:'';position:absolute;right:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:6px;border:2px solid var(--border);transition:all .18s ease;}
+.opt.multi.selected::after{background:var(--accent);border-color:var(--accent);content:'✓';color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+
+/* ── BUTTONS ── */
+.btn-continuar{margin-top:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:50px;padding:15px 48px;font-size:15px;font-weight:700;font-family:'Sora',sans-serif;cursor:pointer;transition:all .2s ease;letter-spacing:.02em;box-shadow:0 4px 22px rgba(255,107,0,.25);}
+.btn-continuar:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(255,107,0,.4);}
+
+.btn-entendo{margin-top:22px;width:100%;background:transparent;border:1.5px solid var(--accent);color:var(--accent);border-radius:50px;padding:14px 32px;font-size:15px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;transition:all .2s ease;}
+.btn-entendo:hover{background:var(--accent);color:#fff;box-shadow:0 4px 22px rgba(255,107,0,.3);}
+
+/* ── INFO CARDS ── */
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;width:100%;}
+.info-icon{font-size:30px;margin-bottom:14px;display:block;}
+.info-hl{font-size:19px;font-weight:700;margin-bottom:16px;line-height:1.35;}
+.check-list{list-style:none;margin-bottom:20px;}
+.check-list li{font-size:13px;color:#ccc;padding:7px 0;display:flex;align-items:flex-start;gap:10px;line-height:1.5;border-bottom:1px solid #1a1a1a;}
+.check-list li::before{content:'✓';color:var(--accent);font-weight:800;flex-shrink:0;margin-top:1px;}
+.sci-box{background:rgba(255,107,0,.05);border:1px solid rgba(255,107,0,.2);border-radius:12px;padding:16px;}
+.sci-label{font-size:10px;color:var(--accent);font-weight:800;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+.sci-txt{font-size:13px;color:#bbb;line-height:1.6;}
+.sci-txt strong{color:var(--text);}
+.sci-meta{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7;}
+.sci-meta strong{color:#ccc;}
+
+/* ── TIP BOX ── */
+.tip-box{background:rgba(255,107,0,.06);border:1px solid rgba(255,107,0,.2);border-radius:12px;padding:14px 16px;margin-top:14px;width:100%;}
+.tip-lbl{font-size:10px;color:var(--accent);font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px;}
+.tip-txt{font-size:13px;color:#bbb;line-height:1.5;}
+
+/* ── RATING ── */
+.rating-step-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;text-align:center;font-weight:600;}
+.rating-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;width:100%;text-align:center;}
+.rating-emo{font-size:38px;margin-bottom:10px;}
+.rating-name{font-size:19px;font-weight:700;margin-bottom:6px;}
+.rating-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:22px;}
+.rating-btns{display:flex;justify-content:center;gap:14px;}
+.r-btn{display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:12px 18px;cursor:pointer;transition:all .18s ease;font-family:'Sora',sans-serif;color:var(--text);font-size:11px;font-weight:600;}
+.r-btn .r-icon{font-size:22px;}
+.r-btn:hover{transform:scale(1.06);}
+.r-btn.neg:hover{border-color:#ef4444;background:rgba(239,68,68,.1);color:#ef4444;}
+.r-btn.neu:hover{border-color:#f59e0b;background:rgba(245,158,11,.1);color:#f59e0b;}
+.r-btn.pos:hover{border-color:#10b981;background:rgba(16,185,129,.1);color:#10b981;}
+
+/* ── PROFILE ── */
+.profile-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 22px;width:100%;margin-bottom:14px;}
+.p-header{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.p-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.p-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+.p-name{font-size:17px;font-weight:700;margin-top:2px;}
+.score-top{display:flex;justify-content:space-between;margin-bottom:5px;}
+.score-nm{font-size:13px;font-weight:600;}
+.bar-bg{height:6px;background:#1e1e1e;border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;}
+.score-st.bad{color:#ef4444;}
+.score-st.mid{color:#f59e0b;}
+.score-st.ok{color:#10b981;}
+
+
+.score-row{margin-bottom:14px;}
+.score-row .bar-fill{width:0%;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.score-row.loaded .bar-fill{width:var(--target-width);}
+.score-val{font-size:13px;font-weight:700;opacity:0;transition:opacity .4s ease .6s;}
+.score-row.loaded .score-val{opacity:1;}
+.score-st{font-size:11px;margin-top:3px;opacity:0;transition:opacity .3s ease 1s;}
+.score-row.loaded .score-st{opacity:1;}
+
+.profile-loading{display:flex;flex-direction:column;gap:14px;width:100%;padding:16px 0;}
+.pl-line{height:12px;background:#1e1e1e;border-radius:6px;overflow:hidden;position:relative;}
+.pl-line::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,107,0,.15),transparent);animation:shimmer 1.2s ease infinite;}
+@keyframes shimmer{to{left:100%;}}
+.pl-label{height:8px;background:#1e1e1e;border-radius:4px;width:55%;overflow:hidden;position:relative;}
+.pl-label::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,107,0,.12),transparent);animation:shimmer 1.2s ease .2s infinite;}
+
+#profile-scores{opacity:0;transition:opacity .5s ease;}
+#profile-scores.revealed{opacity:1;}
+
+.good-news{background:rgba(255,107,0,.07);border:1px solid rgba(255,107,0,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px;width:100%;}
+.gn-lbl{font-size:10px;color:var(--accent);font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px;}
+.gn-txt{font-size:13px;color:#ccc;line-height:1.5;}
+
+/* ── LOADING ── */
+.ld-wrap{text-align:center;width:100%;padding:20px 0;}
+.ld-icon{font-size:50px;margin-bottom:22px;display:block;animation:pulse 1.6s ease infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.1);opacity:.6;}}
+.ld-title{font-size:20px;font-weight:700;margin-bottom:24px;}
+.ld-bar-bg{height:6px;background:#1a1a1a;border-radius:3px;overflow:hidden;width:100%;margin-bottom:12px;}
+.ld-bar-fill{height:100%;background:linear-gradient(90deg,#FF6B00,#FF9500);border-radius:3px;width:0%;transition:width .12s linear;}
+.ld-pct{font-size:32px;font-weight:800;color:var(--accent);}
+
+/* ── FINAL ── */
+.badge{background:rgba(255,107,0,.12);border:1px solid rgba(255,107,0,.3);border-radius:50px;padding:7px 18px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;display:inline-block;}
+.final-title{font-size:clamp(22px,6vw,30px);font-weight:800;text-align:center;margin-bottom:8px;line-height:1.25;}
+.final-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:26px;}
+.feat-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;width:100%;margin-bottom:18px;}
+.feat-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;color:#ccc;line-height:1.5;}
+.feat-row:last-child{border-bottom:none;}
+.feat-ck{color:var(--accent);font-weight:800;flex-shrink:0;}
+.cta-btn{width:100%;background:linear-gradient(135deg,#FF6B00,#FF9500);color:#fff;border:none;border-radius:50px;padding:17px 32px;font-size:16px;font-weight:800;font-family:'Sora',sans-serif;cursor:pointer;transition:all .2s ease;letter-spacing:.02em;box-shadow:0 4px 28px rgba(255,107,0,.3);margin-bottom:10px;}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(255,107,0,.45);}
+.guarantee{text-align:center;font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:28px;}
+.guarantee strong{color:var(--text);}
+
+/* summary */
+.sum-section{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;width:100%;margin-bottom:14px;}
+.sum-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:16px;}
+.donut-row{display:flex;align-items:center;gap:20px;margin-bottom:18px;}
+.donut-wrap{position:relative;width:80px;height:80px;flex-shrink:0;}
+.donut-wrap svg{transform:rotate(-90deg);}
+.donut-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;font-weight:800;}
+.donut-info .big{font-size:15px;font-weight:700;}
+.donut-info .small{font-size:12px;color:var(--muted);margin-top:3px;}
+.tl-row{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid var(--border);}
+.tl-row:last-child{border-bottom:none;}
+.tl-week{font-size:12px;color:var(--accent);font-weight:700;min-width:58px;flex-shrink:0;}
+.tl-txt{font-size:13px;color:#ccc;}
+.goal-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:#ccc;}
+.goal-row:last-child{border-bottom:none;}
+.goal-ck{color:var(--accent);font-weight:700;}
+.steps-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;width:100%;margin-bottom:18px;}
+.step-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:#ccc;line-height:1.5;align-items:flex-start;}
+.step-item:last-child{border-bottom:none;}
+.step-num{font-size:20px;flex-shrink:0;}
+
+/* testimonials */
+.testi{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:10px;width:100%;}
+.testi-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.testi-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#FF6B00,#FF9500);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.testi-nm{font-size:14px;font-weight:700;}
+.testi-stars{margin-left:auto;font-size:13px;}
+.testi-txt{font-size:13px;color:#bbb;line-height:1.6;}
+
+.sec-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:6px;}
+.sec-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;}
+
+/* results bars */
+.result-row{display:flex;align-items:center;gap:12px;padding:7px 0;}
+.result-lbl{font-size:13px;flex:1;}
+.result-pct{font-size:13px;font-weight:700;min-width:36px;text-align:right;}
+.result-bar{flex:2;height:6px;background:#1e1e1e;border-radius:3px;overflow:hidden;}
+.result-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#FF6B00,#FF9500);}
+
+.section-divider{width:100%;border:none;border-top:1px solid var(--border);margin:24px 0;}
+
+/* how it works */
+.hw-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.hw-item:last-child{border-bottom:none;}
+.hw-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#FF6B00,#FF9500);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;}
+.hw-txt{font-size:13px;color:#ccc;line-height:1.5;}
+</style>
+</head>
+<body>
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div id="top-bar">
+  <span id="brand">NEUROFLOW</span>
+  <span id="step-counter"></span>
+</div>
+
+<div id="quiz-container">
+
+  <!-- STEP 1: Age -->
+  <div class="step active" data-step="1" data-type="single" data-total="24">
+    <p class="step-title">Selecione sua idade</p>
+    <p class="step-subtitle">Alívio natural da neuropatia para adultos com mais de 40 anos.</p>
+    <div class="age-grid">
+      <div class="opt" data-value="40-49"><span class="lbl">40-49</span></div>
+      <div class="opt" data-value="50-59"><span class="lbl">50-59</span></div>
+      <div class="opt" data-value="60-69"><span class="lbl">60-69</span></div>
+      <div class="opt" data-value="70+"><span class="lbl">70+</span></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Type of discomfort -->
+  <div class="step" data-step="2" data-type="single" data-total="24">
+    <p class="step-title">Qual das opções a seguir melhor descreve seu desconforto nervoso?</p>
+    <p class="step-subtitle">Selecione a opção que melhor corresponde à sua experiência.</p>
+    <div class="options-list">
+      <div class="opt" data-value="burning"><span class="emo">🔥</span><div class="txt"><p class="lbl">Sensações de queimação</p><p class="dsc">Sensação de fogo ou calor sob a pele.</p></div></div>
+      <div class="opt" data-value="sharp"><span class="emo">⚡️</span><div class="txt"><p class="lbl">Dor aguda/lancinante</p><p class="dsc">Choques elétricos ou solavancos repentinos.</p></div></div>
+      <div class="opt" data-value="numbness"><span class="emo">😕</span><div class="txt"><p class="lbl">Dormência/Formigamento</p><p class="dsc">Não consigo sentir os pés direito, sinto formigamento.</p></div></div>
+      <div class="opt" data-value="all"><span class="emo">😫</span><div class="txt"><p class="lbl">Tudo o que precede</p><p class="dsc">Vários sintomas em momentos diferentes.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 3: What bothers most -->
+  <div class="step" data-step="3" data-type="single" data-total="24">
+    <p class="step-title">O que mais te incomoda em relação ao seu desconforto nervoso?</p>
+    <p class="step-subtitle">Escolha aquela que mais te afeta.</p>
+    <div class="options-list">
+      <div class="opt" data-value="sleep"><span class="emo">😴</span><div class="txt"><p class="lbl">Não consigo dormir a noite toda.</p></div></div>
+      <div class="opt" data-value="activities"><span class="emo">🚶🏻‍♀️</span><div class="txt"><p class="lbl">Tive que parar de fazer atividades que adoro.</p></div></div>
+      <div class="opt" data-value="pills"><span class="emo">💊</span><div class="txt"><p class="lbl">Os comprimidos já não fazem efeito.</p></div></div>
+      <div class="opt" data-value="worse"><span class="emo">😓</span><div class="txt"><p class="lbl">Estou preocupado que esteja piorando.</p></div></div>
+      <div class="opt" data-value="natural"><span class="emo">🌿</span><div class="txt"><p class="lbl">Estou procurando opções naturais.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Goals -->
+  <div class="step" data-step="4" data-type="single" data-total="24">
+    <p class="step-title">Qual a questão a ser respondida?</p>
+    <p class="step-subtitle">Selecione o que mais você deseja alcançar.</p>
+    <div class="options-list">
+      <div class="opt" data-value="sleep_full"><span class="emo">🌜</span><div class="txt"><p class="lbl">Durma a noite toda sem dor.</p></div></div>
+      <div class="opt" data-value="walk"><span class="emo">🚶🏻‍♀️</span><div class="txt"><p class="lbl">Ande e fique em pé sem desconforto.</p></div></div>
+      <div class="opt" data-value="no_pills"><span class="emo">🛑</span><div class="txt"><p class="lbl">Pare de tomar comprimidos com efeitos colaterais.</p></div></div>
+      <div class="opt" data-value="normal"><span class="emo">☺️</span><div class="txt"><p class="lbl">Me sinto normal novamente no meu próprio corpo.</p></div></div>
+      <div class="opt" data-value="prevent"><span class="emo">🛡</span><div class="txt"><p class="lbl">Impeça que meus nervos piorem.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Where symptoms (MULTI) -->
+  <div class="step" data-step="5" data-type="multi" data-total="24">
+    <p class="step-title">Onde você sente os sintomas?</p>
+    <p class="step-subtitle">Selecione todas as opções aplicáveis.</p>
+    <div class="options-list">
+      <div class="opt multi" data-value="feet"><span class="emo">🦶🏻</span><div class="txt"><p class="lbl">Pés</p><p class="dsc">Queimação, dormência ou formigamento nos pés.</p></div></div>
+      <div class="opt multi" data-value="legs"><span class="emo">🦵🏻</span><div class="txt"><p class="lbl">Parte inferior das pernas</p><p class="dsc">Dor ou sensações que se irradiam dos pés para as pernas.</p></div></div>
+      <div class="opt multi" data-value="hands"><span class="emo">✋🏻</span><div class="txt"><p class="lbl">Mãos</p><p class="dsc">Formigamento ou fraqueza nos dedos/mãos.</p></div></div>
+      <div class="opt multi" data-value="multiple"><span class="emo">🏋🏻</span><div class="txt"><p class="lbl">Múltiplas áreas</p><p class="dsc">Sintomas em vários locais.</p></div></div>
+    </div>
+    <button class="btn-continuar">Continuar</button>
+  </div>
+
+  <!-- STEP 6: Duration -->
+  <div class="step" data-step="6" data-type="single" data-total="24">
+    <p class="step-title">Há quanto tempo você vem sofrendo com desconforto nos nervos?</p>
+    <p class="step-subtitle">Isso nos ajuda a entender sua situação.</p>
+    <div class="options-list">
+      <div class="opt" data-value="lt6"><span class="emo">📅</span><div class="txt"><p class="lbl">Menos de 6 meses</p></div></div>
+      <div class="opt" data-value="6to12"><span class="emo">📆</span><div class="txt"><p class="lbl">6 meses a 1 ano</p></div></div>
+      <div class="opt" data-value="1to3"><span class="emo">🗓️</span><div class="txt"><p class="lbl">1 a 3 anos</p></div></div>
+      <div class="opt" data-value="3to5"><span class="emo">📊</span><div class="txt"><p class="lbl">3 a 5 anos</p></div></div>
+      <div class="opt" data-value="gt5"><span class="emo">😔</span><div class="txt"><p class="lbl">Mais de 5 anos</p><p class="dsc">Você passou por muita coisa.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 7: What tried (MULTI) -->
+  <div class="step" data-step="7" data-type="multi" data-total="24">
+    <p class="step-title">O que você já tentou até agora?</p>
+    <p class="step-subtitle">Selecione todas as opções aplicáveis.</p>
+    <div class="options-list">
+      <div class="opt multi" data-value="rx"><span class="emo">💊</span><div class="txt"><p class="lbl">Medicamentos com receita médica</p><p class="dsc">Gabapentina, Lyrica, etc.</p></div></div>
+      <div class="opt multi" data-value="otc"><span class="emo">💉</span><div class="txt"><p class="lbl">Analgésicos de venda livre</p><p class="dsc">Alívio temporário, na melhor das hipóteses.</p></div></div>
+      <div class="opt multi" data-value="supps"><span class="emo">🍃</span><div class="txt"><p class="lbl">Suplementos e Vitaminas</p><p class="dsc">Vitamina B12, ácido alfa-lipóico, etc.</p></div></div>
+      <div class="opt multi" data-value="creams"><span class="emo">🧴</span><div class="txt"><p class="lbl">Cremes tópicos</p><p class="dsc">Funciona por uma hora, talvez duas.</p></div></div>
+      <div class="opt multi" data-value="nothing"><span class="emo">🔍</span><div class="txt"><p class="lbl">Nada ainda</p><p class="dsc">Acabei de começar a procurar soluções.</p></div></div>
+    </div>
+    <button class="btn-continuar">Continuar</button>
+  </div>
+
+  <!-- STEP 8: Side effects -->
+  <div class="step" data-step="8" data-type="single" data-total="24">
+    <p class="step-title">Você já teve efeitos colaterais devido a medicamentos?</p>
+    <p class="step-subtitle">Comum em medicamentos para neuropatia.</p>
+    <div class="options-list">
+      <div class="opt" data-value="brain_fog"><span class="emo">🧠</span><div class="txt"><p class="lbl">Sim – névoa mental e confusão mental</p><p class="dsc">Difícil pensar com clareza.</p></div></div>
+      <div class="opt" data-value="dizzy"><span class="emo">😵</span><div class="txt"><p class="lbl">Sim – tonturas e problemas de equilíbrio</p><p class="dsc">Sensação de instabilidade.</p></div></div>
+      <div class="opt" data-value="stomach"><span class="emo">🤢</span><div class="txt"><p class="lbl">Sim – problemas de estômago</p><p class="dsc">Náuseas ou problemas digestivos.</p></div></div>
+      <div class="opt" data-value="stopped"><span class="emo">📉</span><div class="txt"><p class="lbl">Sim – eles pararam de funcionar.</p><p class="dsc">Tolerância acumulada.</p></div></div>
+      <div class="opt" data-value="no_more"><span class="emo">🚫</span><div class="txt"><p class="lbl">Prefiro não tomar mais comprimidos.</p><p class="dsc">Em busca de alternativas.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 9: INFO - Circulation -->
+  <div class="step" data-step="9" data-type="info" data-total="24">
+    <div class="info-card">
+      <span class="info-icon">🔬</span>
+      <p class="info-hl">E se o problema não for o nervosismo...<br>mas sim a circulação sanguínea?</p>
+      <ul class="check-list">
+        <li>A má circulação sanguínea priva os nervos de oxigênio e nutrientes.</li>
+        <li>Circulação comprometida = sinais nervosos comprometidos.</li>
+        <li>Os comprimidos mascaram a dor, mas nunca resolvem a causa raiz.</li>
+        <li>Restaurar o fluxo sanguíneo pode restaurar a função nervosa naturalmente.</li>
+      </ul>
+      <div class="sci-box">
+        <p class="sci-label">🔬 A Ciência</p>
+        <p class="sci-txt">O Centro Médico da Universidade de Stanford descobriu que a terapia magnética direcionada melhorou a função nervosa em <strong>80% dos pacientes</strong>, restaurando a circulação nas vias nervosas danificadas.</p>
+      </div>
+    </div>
+    <button class="btn-entendo">Eu entendo →</button>
+  </div>
+
+  <!-- STEP 10: Sleep frequency -->
+  <div class="step" data-step="10" data-type="single" data-total="24">
+    <p class="step-title">Com que frequência o desconforto nos nervos afeta seu sono?</p>
+    <p class="step-subtitle">&nbsp;</p>
+    <div class="options-list">
+      <div class="opt" data-value="every_night"><span class="emo">😫</span><div class="txt"><p class="lbl">Todas as noites</p><p class="dsc">Não me lembro da última vez que dormi bem.</p></div></div>
+      <div class="opt" data-value="most_nights"><span class="emo">😞</span><div class="txt"><p class="lbl">Na maioria das noites (4 a 6 por semana)</p><p class="dsc">Está se tornando a norma.</p></div></div>
+      <div class="opt" data-value="some_nights"><span class="emo">😐</span><div class="txt"><p class="lbl">Várias noites (2 a 3 por semana)</p><p class="dsc">Acerto ou erro.</p></div></div>
+      <div class="opt" data-value="occasionally"><span class="emo">🙂</span><div class="txt"><p class="lbl">Ocasionalmente</p><p class="dsc">Só quando se inflama.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 11: Activities limited (MULTI) -->
+  <div class="step" data-step="11" data-type="multi" data-total="24">
+    <p class="step-title">Quais atividades o desconforto nos nervos o obrigou a limitar ou evitar?</p>
+    <p class="step-subtitle">Selecione todas as opções aplicáveis.</p>
+    <div class="options-list">
+      <div class="opt multi" data-value="standing"><span class="emo">🧍</span><div class="txt"><p class="lbl">Ficar em pé por longos períodos</p></div></div>
+      <div class="opt multi" data-value="walking"><span class="emo">🚶</span><div class="txt"><p class="lbl">Caminhada ou trilha</p></div></div>
+      <div class="opt multi" data-value="kids"><span class="emo">👨‍👧</span><div class="txt"><p class="lbl">Brincando com crianças/netos</p></div></div>
+      <div class="opt multi" data-value="work"><span class="emo">💼</span><div class="txt"><p class="lbl">Atividades de trabalho</p></div></div>
+      <div class="opt multi" data-value="social"><span class="emo">🎉</span><div class="txt"><p class="lbl">Eventos e encontros sociais</p></div></div>
+      <div class="opt multi" data-value="persist"><span class="emo">💪</span><div class="txt"><p class="lbl">Eu persisto apesar da dor.</p></div></div>
+    </div>
+    <button class="btn-continuar">Continuar</button>
+  </div>
+
+  <!-- STEP 12: INFO - Pulse point -->
+  <div class="step" data-step="12" data-type="info" data-total="24">
+    <div class="info-card">
+      <span class="info-icon">🎯</span>
+      <p class="info-hl">Por que seu PULSO guarda a chave para seus PÉS</p>
+      <ul class="check-list">
+        <li>Seu pulso contém a artéria radial – uma via direta para todo o seu sistema circulatório.</li>
+        <li>A medicina tradicional chinesa descobriu isso há 2.000 anos.</li>
+        <li>A ciência moderna finalmente comprovou por que funciona.</li>
+      </ul>
+      <div class="sci-box">
+        <p class="sci-label">💡 O Efeito do Ponto de Pulsação</p>
+        <p class="sci-txt">A estimulação de um ponto de pulsação específico no pulso com uma frequência magnética calibrada desencadeia uma <strong>resposta sistêmica</strong> em todo o sistema circulatório e nervoso.</p>
+      </div>
+    </div>
+    <button class="btn-entendo">Eu entendo →</button>
+  </div>
+
+  <!-- STEP 13: Exercise -->
+  <div class="step" data-step="13" data-type="single" data-total="24">
+    <p class="step-title">Com que frequência você se exercita ou movimenta o corpo?</p>
+    <p class="step-subtitle">&nbsp;</p>
+    <div class="options-list">
+      <div class="opt" data-value="never"><span class="emo">😅</span><div class="txt"><p class="lbl">Raramente ou nunca</p><p class="dsc">Eu quero, mas a dor me impede.</p></div></div>
+      <div class="opt" data-value="1-2"><span class="emo">💪</span><div class="txt"><p class="lbl">1 a 2 vezes por semana</p><p class="dsc">Quando eu conseguir.</p></div></div>
+      <div class="opt" data-value="3-4"><span class="emo">💪⚡</span><div class="txt"><p class="lbl">3 a 4 vezes por semana</p><p class="dsc">Eu sigo em frente apesar do desconforto.</p></div></div>
+      <div class="opt" data-value="5plus"><span class="emo">🏆</span><div class="txt"><p class="lbl">Mais de 5 vezes por semana</p><p class="dsc">Fazer exercícios é importante para mim.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 14: Water -->
+  <div class="step" data-step="14" data-type="single" data-total="24">
+    <p class="step-title">Quanta água você bebe por dia?</p>
+    <p class="step-subtitle">&nbsp;</p>
+    <div class="options-list">
+      <div class="opt" data-value="coffee_only"><span class="emo">☕</span><div class="txt"><p class="lbl">Apenas café ou chá</p><p class="dsc">Menos de 2 copos de água.</p></div></div>
+      <div class="opt" data-value="lt4"><span class="emo">💧</span><div class="txt"><p class="lbl">Menos de 4 copos</p><p class="dsc">Até 32 oz / 1 litro.</p></div></div>
+      <div class="opt" data-value="4-8"><span class="emo">💧💧</span><div class="txt"><p class="lbl">4-8 copos</p><p class="dsc">32-64 oz / 1-2 litros.</p></div></div>
+      <div class="opt" data-value="gt8"><span class="emo">💧💧💧</span><div class="txt"><p class="lbl">Mais de 8 copos</p><p class="dsc">64+ oz / 2+ litros.</p></div></div>
+    </div>
+    <div class="tip-box">
+      <p class="tip-lbl">💡 Por que isso é importante</p>
+      <p class="tip-txt">A desidratação engrossa o sangue e reduz a circulação nas extremidades. Muitos pacientes com neuropatia observam melhora simplesmente aumentando a ingestão de água.</p>
+    </div>
+  </div>
+
+  <!-- STEP 15: Medical conditions (MULTI) -->
+  <div class="step" data-step="15" data-type="multi" data-total="24">
+    <p class="step-title">Você apresenta alguma dessas condições?</p>
+    <p class="step-subtitle">Selecione todas as opções aplicáveis (isso ajuda a personalizar seus resultados).</p>
+    <div class="options-list">
+      <div class="opt multi" data-value="t2d"><span class="emo">🩸</span><div class="txt"><p class="lbl">Diabetes tipo 2</p></div></div>
+      <div class="opt multi" data-value="prediab"><span class="emo">📊</span><div class="txt"><p class="lbl">Pré-diabetes ou preocupações com o açúcar no sangue</p></div></div>
+      <div class="opt multi" data-value="hbp"><span class="emo">❤️</span><div class="txt"><p class="lbl">Pressão alta</p></div></div>
+      <div class="opt multi" data-value="circulation"><span class="emo">🔄</span><div class="txt"><p class="lbl">Problemas de circulação</p></div></div>
+      <div class="opt multi" data-value="none"><span class="emo">✅</span><div class="txt"><p class="lbl">Nenhuma das acima</p></div></div>
+    </div>
+    <button class="btn-continuar">Continuar</button>
+  </div>
+
+  <!-- STEP 16: INFO - Stanford -->
+  <div class="step" data-step="16" data-type="info" data-total="24">
+    <div class="info-card">
+      <span class="info-icon">🏛️</span>
+      <p class="info-hl">A Universidade de Stanford comprovou o que as grandes farmacêuticas não querem que você saiba.</p>
+      <div style="text-align:center;margin:20px 0;">
+        <div style="font-size:52px;font-weight:800;color:var(--accent);">80%</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Pacientes com neuropatia apresentaram melhora significativa na função nervosa com o uso da terapia magnética.</div>
+      </div>
+      <ul class="check-list">
+        <li>Os benefícios persistiram mesmo após o término do tratamento.</li>
+        <li>(Ao contrário de comprimidos que só funcionam enquanto você os toma)</li>
+      </ul>
+      <div class="sci-box">
+        <p class="sci-label">📋 Detalhes do Estudo</p>
+        <p class="sci-txt sci-meta">
+          <strong>Centro Médico da Universidade de Stanford</strong><br>
+          Tipo: Duplo-cego, controlado por placebo<br>
+          Descoberta: A frequência magnética de <strong>17.000 Gauss</strong> restaura a sinalização nervosa e a circulação.
+        </p>
+      </div>
+    </div>
+    <button class="btn-entendo">Eu entendo →</button>
+  </div>
+
+  <!-- STEP 17: Rating - Medication -->
+  <div class="step" data-step="17" data-type="rating" data-total="24">
+    <p class="step-title">Qual abordagem lhe agrada mais?</p>
+    <p class="step-subtitle">Avalie cada opção.</p>
+    <div class="rating-card">
+      <div class="rating-emo">💊</div>
+      <div class="rating-name">Medicação diária</div>
+      <div class="rating-desc">Tome os comprimidos diariamente, controle os efeitos colaterais e renove a receita mensalmente.</div>
+      <div class="rating-btns">
+        <button class="r-btn neg"><span class="r-icon">👎🏻</span>Não Gosto</button>
+        <button class="r-btn neu"><span class="r-icon">😐</span>Neutro</button>
+        <button class="r-btn pos"><span class="r-icon">👍🏻</span>Gosto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 18: Rating - Magnetic therapy -->
+  <div class="step" data-step="18" data-type="rating" data-total="24">
+    <p class="step-title">Qual abordagem lhe agrada mais?</p>
+    <p class="step-subtitle">Avalie cada opção.</p>
+    <div class="rating-card">
+      <div class="rating-emo">🧲</div>
+      <div class="rating-name">Terapia magnética natural</div>
+      <div class="rating-desc">Use uma pulseira, sem comprimidos, sem efeitos colaterais, custo único.</div>
+      <div class="rating-btns">
+        <button class="r-btn neg"><span class="r-icon">👎🏻</span>Não Gosto</button>
+        <button class="r-btn neu"><span class="r-icon">😐</span>Neutro</button>
+        <button class="r-btn pos"><span class="r-icon">👍🏻</span>Gosto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 19: Rating - Medical procedures -->
+  <div class="step" data-step="19" data-type="rating" data-total="24">
+    <p class="step-title">Qual abordagem lhe agrada mais?</p>
+    <p class="step-subtitle">Avalie cada opção.</p>
+    <div class="rating-card">
+      <div class="rating-emo">🏥</div>
+      <div class="rating-name">Procedimentos médicos</div>
+      <div class="rating-desc">Injeções, cirurgia, consultas médicas frequentes.</div>
+      <div class="rating-btns">
+        <button class="r-btn neg"><span class="r-icon">👎🏻</span>Não Gosto</button>
+        <button class="r-btn neu"><span class="r-icon">😐</span>Neutro</button>
+        <button class="r-btn pos"><span class="r-icon">👍🏻</span>Gosto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 20: Energy levels -->
+  <div class="step" data-step="20" data-type="single" data-total="24">
+    <p class="step-title">Como estão seus níveis de energia?</p>
+    <p class="step-subtitle">&nbsp;</p>
+    <div class="options-list">
+      <div class="opt" data-value="exhausted"><span class="emo">😫</span><div class="txt"><p class="lbl">Exausto na maior parte do tempo</p><p class="dsc">A dor e a falta de sono estão me esgotando.</p></div></div>
+      <div class="opt" data-value="varies"><span class="emo">📊</span><div class="txt"><p class="lbl">Os níveis de energia variam ao longo do dia.</p><p class="dsc">Momentos bons e momentos ruins.</p></div></div>
+      <div class="opt" data-value="ok"><span class="emo">🙂</span><div class="txt"><p class="lbl">No geral, está bom, mas poderia ser melhor.</p><p class="dsc">Administrando, mas não prosperando.</p></div></div>
+      <div class="opt" data-value="high"><span class="emo">⚡</span><div class="txt"><p class="lbl">Muita energia apesar dos sintomas</p><p class="dsc">Eu persisto.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 21: Profile (has Continuar) -->
+  <div class="step" data-step="21" data-type="profile" data-total="24">
+    <p class="step-title">Seu perfil preliminar</p>
+    <p class="step-subtitle">Com base nas suas respostas até o momento.</p>
+    <div class="profile-card">
+      <div class="p-header">
+        <div class="p-avatar">👤</div>
+        <div>
+          <p class="p-lbl">Você</p>
+          <p class="p-name">Saúde Circulatória</p>
+        </div>
+      </div>
+
+      <!-- Skeleton loading -->
+      <div id="profile-skeleton">
+        <div style="margin-bottom:16px;">
+          <div class="pl-label" style="margin-bottom:8px;"></div>
+          <div class="pl-line"></div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <div class="pl-label" style="margin-bottom:8px;width:45%;"></div>
+          <div class="pl-line"></div>
+        </div>
+        <div style="margin-bottom:4px;">
+          <div class="pl-label" style="margin-bottom:8px;width:50%;"></div>
+          <div class="pl-line"></div>
+        </div>
+      </div>
+
+      <!-- Real scores (hidden until reveal) -->
+      <div id="profile-scores">
+        <div class="score-row" style="--target-width:65%;">
+          <div class="score-top"><span class="score-nm">Saúde Circulatória</span><span class="score-val" style="color:#f59e0b;">65</span></div>
+          <div class="bar-bg"><div class="bar-fill" style="background:linear-gradient(90deg,#f59e0b,#ef4444);"></div></div>
+          <p class="score-st mid">Precisa de melhorias</p>
+        </div>
+        <div class="score-row" style="--target-width:44%;">
+          <div class="score-top"><span class="score-nm">Função nervosa</span><span class="score-val" style="color:#ef4444;">44</span></div>
+          <div class="bar-bg"><div class="bar-fill" style="background:linear-gradient(90deg,#ef4444,#dc2626);"></div></div>
+          <p class="score-st bad">Comprometido</p>
+        </div>
+        <div class="score-row" style="--target-width:41%;">
+          <div class="score-top"><span class="score-nm">Qualidade do sono</span><span class="score-val" style="color:#ef4444;">41</span></div>
+          <div class="bar-bg"><div class="bar-fill" style="background:linear-gradient(90deg,#ef4444,#dc2626);"></div></div>
+          <p class="score-st bad">Pobre</p>
+        </div>
+      </div>
+    </div>
+    <div class="good-news" id="profile-good-news" style="opacity:0;transition:opacity .5s ease 2.5s;">
+      <p class="gn-lbl">💡 Boas Notícias</p>
+      <p class="gn-txt">Você é um forte candidato para a restauração nervosa natural. <strong>84% das pessoas com o seu perfil</strong> relatam melhora significativa em 14 dias.</p>
+    </div>
+    <button class="btn-continuar" id="profile-btn" style="opacity:0;transition:opacity .4s ease 3s;pointer-events:none;">Continuar minha avaliação →</button>
+  </div>
+
+  <!-- STEP 22: Money spent -->
+  <div class="step" data-step="22" data-type="single" data-total="24">
+    <p class="step-title">Quanto você já gastou tentando resolver seu desconforto nervoso?</p>
+    <p class="step-subtitle">Tratamentos, médicos e medicamentos combinados.</p>
+    <div class="options-list">
+      <div class="opt" data-value="lt100"><span class="emo">💵</span><div class="txt"><p class="lbl">Menos de 100 reais</p></div></div>
+      <div class="opt" data-value="100-500"><span class="emo">💵💵</span><div class="txt"><p class="lbl">R$100 – R$500</p></div></div>
+      <div class="opt" data-value="500-1000"><span class="emo">💵💵💵</span><div class="txt"><p class="lbl">R$500 – R$1.000</p></div></div>
+      <div class="opt" data-value="1000-3000"><span class="emo">💸</span><div class="txt"><p class="lbl">R$1.000 – R$3.000</p></div></div>
+      <div class="opt" data-value="gt3000"><span class="emo">💸💸</span><div class="txt"><p class="lbl">Mais de 3.000 reais</p></div></div>
+    </div>
+    <div class="tip-box">
+      <p class="tip-lbl">📊 Você não está sozinho(a).</p>
+      <p class="tip-txt">Em média, quem sofre de neuropatia gasta US$3.847 por ano em tratamentos ineficazes. E se houvesse uma solução definitiva?</p>
+    </div>
+  </div>
+
+  <!-- STEP 23: Timeline -->
+  <div class="step" data-step="23" data-type="single" data-total="24">
+    <p class="step-title">Em quanto tempo você gostaria de ver os resultados?</p>
+    <p class="step-subtitle">&nbsp;</p>
+    <div class="options-list">
+      <div class="opt" data-value="asap"><span class="emo">🙏</span><div class="txt"><p class="lbl">O mais breve possível</p><p class="dsc">Preciso desesperadamente de alívio.</p></div></div>
+      <div class="opt" data-value="1-2w"><span class="emo">📅</span><div class="txt"><p class="lbl">Dentro de 1 a 2 semanas seria ótimo.</p><p class="dsc">Cronograma razoável.</p></div></div>
+      <div class="opt" data-value="30d"><span class="emo">🕐</span><div class="txt"><p class="lbl">Posso ser paciente por 30 dias.</p><p class="dsc">Estou disposto a dar tempo ao tempo.</p></div></div>
+      <div class="opt" data-value="whenever"><span class="emo">💪</span><div class="txt"><p class="lbl">Vou dar o tempo que for necessário.</p><p class="dsc">Comprometidos em encontrar alívio.</p></div></div>
+    </div>
+    <div class="tip-box">
+      <p class="tip-lbl">💡 Linha do tempo típica</p>
+      <p class="tip-txt">
+        <strong>Dias 1-4:</strong> Período de adaptação.<br>
+        <strong>Dias 5-7:</strong> Primeiros sinais de melhora.<br>
+        <strong>Semana 2:</strong> Mudanças significativas no sono.<br>
+        <strong>Semana 3:</strong> Resultados máximos do estudo de Stanford.
+      </p>
+    </div>
+  </div>
+
+  <!-- STEP 24: Commitment -->
+  <div class="step" data-step="24" data-type="single" data-total="24">
+    <p class="step-title">Se existisse uma solução natural que funcionasse para 80% das pessoas como você...</p>
+    <p class="step-subtitle">Qual seria o seu nível de comprometimento em tentar?</p>
+    <div class="options-list">
+      <div class="opt" data-value="100"><span class="emo">🔥</span><div class="txt"><p class="lbl">100% comprometido</p><p class="dsc">Estou pronto para a mudança.</p></div></div>
+      <div class="opt" data-value="very"><span class="emo">💪</span><div class="txt"><p class="lbl">Muito comprometido</p><p class="dsc">Estou disposto a tentar de verdade.</p></div></div>
+      <div class="opt" data-value="moderate"><span class="emo">🤔</span><div class="txt"><p class="lbl">Moderadamente comprometido</p><p class="dsc">Cautelosamente otimista.</p></div></div>
+      <div class="opt" data-value="curious"><span class="emo">🔍</span><div class="txt"><p class="lbl">Só por curiosidade.</p><p class="dsc">Ainda estou pesquisando opções.</p></div></div>
+    </div>
+  </div>
+
+  <!-- STEP 25: Loading -->
+  <div class="step" data-step="25" data-type="loading" data-total="24">
+    <div class="ld-wrap">
+      <span class="ld-icon">🔬</span>
+      <p class="ld-title">Carregando...</p>
+      <div class="ld-bar-bg"><div class="ld-bar-fill" id="ld-fill"></div></div>
+      <p class="ld-pct" id="ld-pct">0%</p>
+      <p style="margin-top:12px;font-size:13px;color:var(--muted);">Estamos analisando suas respostas</p>
+    </div>
+  </div>
+
+  <!-- STEP 26: Presenting NeuroViva -->
+  <div class="step" data-step="26" data-type="final" data-total="24">
+    <span class="badge">A solução estudada por Stanford</span>
+    <p class="final-title">Apresentando o NeuroFlow™</p>
+    <p class="final-sub">Seu plano personalizado está pronto.</p>
+    <div class="feat-box">
+      <div class="feat-row"><span class="feat-ck">✓</span><span>Plano Personalizado com base no seu perfil do quiz</span></div>
+      <div class="feat-row"><span class="feat-ck">✓</span><span>Protocolo Diário de Estímulo Circulatório Natural</span></div>
+      <div class="feat-row"><span class="feat-ck">✓</span><span>Rotina de 4 Minutos Guiada</span></div>
+      <div class="feat-row"><span class="feat-ck">✓</span><span>Monitoramento de Sintomas e Evolução</span></div>
+      <div class="feat-row"><span class="feat-ck">✓</span><span>Sem Medicamentos. Sem Efeitos Colaterais.</span></div>
+      <div class="feat-row"><span class="feat-ck">✓</span><span>Garantia de 30 Dias</span></div>
+    </div>
+    <button class="cta-btn" onclick="goToStep(27)">Desbloqueie meu desconto exclusivo →</button>
+  </div>
+
+  <!-- STEP 27: Treatment Summary -->
+  <div class="step" data-step="27" data-type="final" data-total="24">
+    <p class="final-title" style="margin-bottom:6px;">Resumo do seu tratamento<br>para alívio dos nervos</p>
+    <p class="final-sub">Com base nas suas respostas.</p>
+
+    <div class="sum-section">
+      <p class="sum-lbl">Seu Potencial de Melhoria</p>
+      <div class="donut-row">
+        <div class="donut-wrap">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="30" fill="none" stroke="#1e1e1e" stroke-width="10"/>
+            <circle cx="40" cy="40" r="30" fill="none" stroke="url(#dg)" stroke-width="10"
+              stroke-dasharray="163.4" stroke-dashoffset="21.2" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#FF6B00"/>
+                <stop offset="100%" stop-color="#FF9500"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="donut-num">87</span>
+        </div>
+        <div class="donut-info">
+          <p class="big">Alto Potencial</p>
+          <p class="small">Com base em 8.247 usuários com perfis semelhantes, você tem um ALTO potencial para melhorias significativas.</p>
+        </div>
+      </div>
+      <div class="result-row"><span class="result-lbl">Possível</span><div class="result-bar"><div class="result-fill" style="width:87%"></div></div><span class="result-pct" style="color:var(--accent);">87%</span></div>
+      <div class="result-row"><span class="result-lbl">Não possível</span><div class="result-bar"><div class="result-fill" style="width:13%;background:#ef4444;"></div></div><span class="result-pct" style="color:#ef4444;">13%</span></div>
+    </div>
+
+    <div class="sum-section">
+      <p class="sum-lbl">Seu Cronograma Previsto</p>
+      <div class="tl-row"><span class="tl-week">Semana 1</span><span class="tl-txt">Redução na intensidade da queimação</span></div>
+      <div class="tl-row"><span class="tl-week">Semana 2</span><span class="tl-txt">Melhora significativa do sono</span></div>
+      <div class="tl-row"><span class="tl-week">Semana 3</span><span class="tl-txt">Redução da dormência</span></div>
+      <div class="tl-row"><span class="tl-week">Semana 4</span><span class="tl-txt">Estabilidade da função nervosa</span></div>
+    </div>
+
+    <div class="steps-box">
+      <p class="sum-lbl">O NeuroFlow™ faz isso em 3 etapas:</p>
+      <div class="hw-item"><div class="hw-num">1</div><p class="hw-txt">Ativa sua circulação periférica com micro-estímulos guiados</p></div>
+      <div class="hw-item"><div class="hw-num">2</div><p class="hw-txt">Ensina você a reduzir inflamação silenciosa</p></div>
+      <div class="hw-item"><div class="hw-num">3</div><p class="hw-txt">Acompanha seus sinais nervosos e ajusta o plano automaticamente</p></div>
+    </div>
+
+    <div class="sum-section">
+      <p class="sum-lbl">Seus Objetivos de Programa</p>
+      <div class="goal-row"><span class="goal-ck">✓</span>Restaurar a função nervosa natural</div>
+      <div class="goal-row"><span class="goal-ck">✓</span>Eliminar queimação, pontadas e dormência</div>
+      <div class="goal-row"><span class="goal-ck">✓</span>Dormir a noite toda novamente</div>
+      <div class="goal-row"><span class="goal-ck">✓</span>Reduzir ou eliminar os medicamentos</div>
+      <div class="goal-row"><span class="goal-ck">✓</span>Voltar a caminhar com confiança</div>
+    </div>
+    <button class="cta-btn" onclick="goToStep(28)">Resgatar meu desconto →</button>
+  </div>
+
+  <!-- STEP 28: Access + Testimonials -->
+  <div class="step" data-step="28" data-type="final" data-total="24">
+    <p class="final-title">Tenha Acesso Instantâneo ao seu Tratamento!</p>
+    <p class="final-sub">Tratamento e Relatório Premium — Acesso Completo</p>
+
+    <div class="steps-box">
+      <p class="sum-lbl">Como Funciona</p>
+      <div class="hw-item"><div class="hw-num">1</div><p class="hw-txt">Você responde o questionário <span style="color:var(--success)">(já concluído ✓)</span></p></div>
+      <div class="hw-item"><div class="hw-num">2</div><p class="hw-txt">O App cria seu plano personalizado</p></div>
+      <div class="hw-item"><div class="hw-num">3</div><p class="hw-txt">Você segue o protocolo de exercícios diários de 4 minutos</p></div>
+      <div class="hw-item"><div class="hw-num">4</div><p class="hw-txt">O sistema monitora seu progresso e ajusta automaticamente</p></div>
+    </div>
+
+    <div class="feat-box">
+      <p class="sum-lbl">Que inclui:</p>
+      <div class="feat-row"><span class="feat-ck">✔️</span><span>Avaliação Aprofundada de Sua Memória e Habilidades de Foco</span></div>
+      <div class="feat-row"><span class="feat-ck">✔️</span><span>Seu Perfil Personalizado de Força e Fraqueza Cognitiva</span></div>
+      <div class="feat-row"><span class="feat-ck">✔️</span><span>Estratégias de Especialistas para Aumentar a Concentração, Energia Mental e Recall</span></div>
+    </div>
+
+    <div class="sum-section" style="margin-bottom:18px;">
+      <p class="sum-lbl">Resultados Esperados — Usuários relatam:</p>
+      <div class="tl-row"><span class="tl-week" style="min-width:80px;">5–10 dias</span><span class="tl-txt">Redução da queimação</span></div>
+      <div class="tl-row"><span class="tl-week" style="min-width:80px;">2ª semana</span><span class="tl-txt">Sono mais profundo</span></div>
+      <div class="tl-row"><span class="tl-week" style="min-width:80px;">3ª semana</span><span class="tl-txt">Redução da dormência</span></div>
+    </div>
+
+    <button class="cta-btn" onclick="window.open('https://ggcheckout.com.br/checkout/v2/k7lH0dW8NJPLUXONnrGC','_blank')">Desbloquear meu tratamento</button>
+
+    <hr class="section-divider">
+    <p class="sec-title">Casos de Sucesso</p>
+    <p class="sec-sub">Histórias reais de pessoas como você.</p>
+
+    <div class="testi">
+      <div class="testi-hd"><div class="testi-av">BR</div><span class="testi-nm">Brenda Ross</span><span class="testi-stars">★★★★★</span></div>
+      <p class="testi-txt">Não parei os remédios de uma vez, mas com o acompanhamento do app comecei a sentir menos crises de dor. Com autorização do meu médico, consegui reduzir a dose. Só de não depender tanto de comprimido já mudou minha qualidade de vida.</p>
+    </div>
+    <div class="testi">
+      <div class="testi-hd"><div class="testi-av">SJ</div><span class="testi-nm">Sandra Joseane</span><span class="testi-stars">★★★★★</span></div>
+      <p class="testi-txt">O pior da neuropatia não era só a dor. Era a sensação de que ia piorar para sempre. O app me fez sentir que eu tinha controle outra vez.</p>
+    </div>
+    <div class="testi">
+      <div class="testi-hd"><div class="testi-av">EN</div><span class="testi-nm">Elizabeth Niemeyer</span><span class="testi-stars">★★★★★</span></div>
+      <p class="testi-txt">Eu acordava 3 ou 4 vezes por noite com aquela queimação absurda nos pés. Já estava afetando meu humor e meu casamento. Comecei a usar o app meio cético… mas na primeira semana já percebi que estava demorando mais para acordar. Na segunda semana, tive minha primeira noite inteira de sono em meses. Não foi milagre. Foi progresso. E isso me deu esperança de novo.</p>
+    </div>
+    <div class="testi">
+      <div class="testi-hd"><div class="testi-av">CF</div><span class="testi-nm">Camila Ferreira</span><span class="testi-stars">★★★★★</span></div>
+      <p class="testi-txt">Eu evitava sair porque caminhar mais de 10 minutos era um sofrimento. A dormência me deixava insegura. O que mais gostei do NeuroFlow™ foi o acompanhamento diário. Eu conseguia ver meu progresso no gráfico, mesmo quando parecia pequeno. Depois de 3 semanas, voltei a caminhar no quarteirão sem parar no meio. Pode parecer pouco… mas para mim foi libertador.</p>
+    </div>
+
+    <hr class="section-divider">
+    <button class="cta-btn" onclick="window.open('https://ggcheckout.com.br/checkout/v2/k7lH0dW8NJPLUXONnrGC','_blank')">Desbloquear meu tratamento</button>
+
+    <div class="good-news" style="margin-top:16px;">
+      <p class="gn-lbl">🛡 Garantia de 30 Dias</p>
+      <p class="gn-txt">Teste o NeuroFlow™ por 30 dias. Se não perceber melhora clara nos sintomas, basta solicitar cancelamento. <strong>Sem risco. Sem compromisso.</strong></p>
+    </div>
+    <button class="cta-btn" style="margin-top:16px;" onclick="window.open('https://ggcheckout.com.br/checkout/v2/k7lH0dW8NJPLUXONnrGC','_blank')">Desbloquear meu tratamento</button>
+  </div>
+
+</div><!-- end quiz-container -->
+
+<script>
+const TOTAL_QUIZ_STEPS = 24; // quiz steps (not counting final pages)
+let currentStep = 1;
+
+function getStep(n){ return document.querySelector(`.step[data-step="${n}"]`); }
+
+function updateProgress(){
+  const s = getStep(currentStep);
+  const type = s ? s.dataset.type : '';
+  // Only show progress for quiz steps
+  if(['final','loading'].includes(type) || currentStep > TOTAL_QUIZ_STEPS){
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('step-counter').textContent = '';
+  } else {
+    const pct = Math.round((currentStep / TOTAL_QUIZ_STEPS) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('step-counter').textContent = `${currentStep} / ${TOTAL_QUIZ_STEPS}`;
+  }
+}
+
+function goToStep(n){
+  const cur = getStep(currentStep);
+  const next = getStep(n);
+  if(!next) return;
+  if(cur) cur.classList.remove('active');
+  currentStep = n;
+  next.classList.add('active');
+  updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(next.dataset.type === 'loading') startLoading();
+  if(n === 21) triggerProfileAnimation();
+}
+
+function triggerProfileAnimation(){
+  const skeleton = document.getElementById('profile-skeleton');
+  const scores = document.getElementById('profile-scores');
+  const goodNews = document.getElementById('profile-good-news');
+  const btn = document.getElementById('profile-btn');
+
+  // Reset state
+  skeleton.style.display = 'flex';
+  skeleton.style.flexDirection = 'column';
+  scores.classList.remove('revealed');
+  scores.style.display = 'none';
+  goodNews.style.opacity = '0';
+  btn.style.opacity = '0';
+  btn.style.pointerEvents = 'none';
+  document.querySelectorAll('#profile-scores .score-row').forEach(r => r.classList.remove('loaded'));
+
+  // After skeleton delay, show real scores
+  setTimeout(() => {
+    skeleton.style.transition = 'opacity .4s ease';
+    skeleton.style.opacity = '0';
+    setTimeout(() => {
+      skeleton.style.display = 'none';
+      scores.style.display = 'block';
+      // Trigger reflow
+      scores.offsetHeight;
+      scores.classList.add('revealed');
+
+      // Animate bars one by one
+      const rows = document.querySelectorAll('#profile-scores .score-row');
+      rows.forEach((row, i) => {
+        setTimeout(() => {
+          row.classList.add('loaded');
+          const fill = row.querySelector('.bar-fill');
+          fill.style.width = row.style.getPropertyValue('--target-width');
+        }, i * 350);
+      });
+
+      // Good news + button
+      setTimeout(() => {
+        goodNews.style.opacity = '1';
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+      }, 1800);
+    }, 400);
+  }, 1800);
+}
+
+function startLoading(){
+  let pct = 0;
+  const fill = document.getElementById('ld-fill');
+  const label = document.getElementById('ld-pct');
+  const iv = setInterval(()=>{
+    pct += Math.random() * 3 + 1;
+    if(pct >= 100){ pct = 100; clearInterval(iv); setTimeout(()=>goToStep(26), 400); }
+    fill.style.width = Math.min(pct,100) + '%';
+    label.textContent = Math.floor(Math.min(pct,100)) + '%';
+  }, 60);
+}
+
+// Single select: click → advance
+document.querySelectorAll('.step[data-type="single"] .opt').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    const step = opt.closest('.step');
+    step.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    setTimeout(()=> goToStep(currentStep + 1), 280);
+  });
+});
+
+// Multi select: toggle, Continuar advances
+document.querySelectorAll('.step[data-type="multi"] .opt').forEach(opt=>{
+  opt.addEventListener('click',()=> opt.classList.toggle('selected'));
+});
+document.querySelectorAll('.step[data-type="multi"] .btn-continuar').forEach(btn=>{
+  btn.addEventListener('click',()=> goToStep(currentStep + 1));
+});
+
+// Profile Continuar
+document.querySelectorAll('.step[data-type="profile"] .btn-continuar').forEach(btn=>{
+  btn.addEventListener('click',()=> goToStep(currentStep + 1));
+});
+
+// Info screens: "Eu entendo →"
+document.querySelectorAll('.step[data-type="info"] .btn-entendo').forEach(btn=>{
+  btn.addEventListener('click',()=> goToStep(currentStep + 1));
+});
+
+// Rating buttons: click any → advance
+document.querySelectorAll('.step[data-type="rating"] .r-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const btns = btn.closest('.rating-btns').querySelectorAll('.r-btn');
+    btns.forEach(b=>b.style.opacity='.4');
+    btn.style.opacity='1';
+    btn.style.transform='scale(1.08)';
+    setTimeout(()=> goToStep(currentStep + 1), 300);
+  });
+});
+
+// Init
+updateProgress();
+</script>
+</body>
+</html>
