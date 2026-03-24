@@ -473,56 +473,20 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
     <button class="btn-entendo">Eu entendo →</button>
   </div>
 
-  <!-- STEP 17: Rating - Medication -->
-  <div class="step" data-step="17" data-type="rating" data-total="24">
-    <p class="step-title">Qual abordagem lhe agrada mais?</p>
-    <p class="step-subtitle">Avalie cada opção.</p>
-    <div class="rating-card">
-      <div class="rating-emo">💊</div>
-      <div class="rating-name">Medicação diária</div>
-      <div class="rating-desc">Tome os comprimidos diariamente, controle os efeitos colaterais e renove a receita mensalmente.</div>
-      <div class="rating-btns">
-        <button class="r-btn neg"><span class="r-icon">👎🏻</span>Não Gosto</button>
-        <button class="r-btn neu"><span class="r-icon">😐</span>Neutro</button>
-        <button class="r-btn pos"><span class="r-icon">👍🏻</span>Gosto</button>
-      </div>
+  <!-- STEP 17: Emocional -->
+  <div class="step" data-step="17" data-type="single" data-total="22">
+    <p class="step-title">Qual dessas situações mais te incomoda hoje?</p>
+    <p class="step-subtitle">&nbsp;</p>
+    <div class="options-list">
+      <div class="opt" data-value="burning_night"><span class="emo">🔥</span><div class="txt"><p class="lbl">A queimação piora à noite</p></div></div>
+      <div class="opt" data-value="no_sleep"><span class="emo">😴</span><div class="txt"><p class="lbl">Não consigo dormir por causa da dor</p></div></div>
+      <div class="opt" data-value="walking"><span class="emo">🚶</span><div class="txt"><p class="lbl">Caminhar virou desconfortável</p></div></div>
+      <div class="opt" data-value="getting_worse"><span class="emo">😔</span><div class="txt"><p class="lbl">Sinto que isso só piora com o tempo</p></div></div>
     </div>
   </div>
 
-  <!-- STEP 18: Rating - Magnetic therapy -->
-  <div class="step" data-step="18" data-type="rating" data-total="24">
-    <p class="step-title">Qual abordagem lhe agrada mais?</p>
-    <p class="step-subtitle">Avalie cada opção.</p>
-    <div class="rating-card">
-      <div class="rating-emo">🧲</div>
-      <div class="rating-name">Terapia magnética natural</div>
-      <div class="rating-desc">Use uma pulseira, sem comprimidos, sem efeitos colaterais, custo único.</div>
-      <div class="rating-btns">
-        <button class="r-btn neg"><span class="r-icon">👎🏻</span>Não Gosto</button>
-        <button class="r-btn neu"><span class="r-icon">😐</span>Neutro</button>
-        <button class="r-btn pos"><span class="r-icon">👍🏻</span>Gosto</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 19: Rating - Medical procedures -->
-  <div class="step" data-step="19" data-type="rating" data-total="24">
-    <p class="step-title">Qual abordagem lhe agrada mais?</p>
-    <p class="step-subtitle">Avalie cada opção.</p>
-    <div class="rating-card">
-      <div class="rating-emo">🏥</div>
-      <div class="rating-name">Procedimentos médicos</div>
-      <div class="rating-desc">Injeções, cirurgia, consultas médicas frequentes.</div>
-      <div class="rating-btns">
-        <button class="r-btn neg"><span class="r-icon">👎🏻</span>Não Gosto</button>
-        <button class="r-btn neu"><span class="r-icon">😐</span>Neutro</button>
-        <button class="r-btn pos"><span class="r-icon">👍🏻</span>Gosto</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 20: Energy levels -->
-  <div class="step" data-step="20" data-type="single" data-total="24">
+  <!-- STEP 18: Energy levels -->
+  <div class="step" data-step="18" data-type="single" data-total="22">
     <p class="step-title">Como estão seus níveis de energia?</p>
     <p class="step-subtitle">&nbsp;</p>
     <div class="options-list">
@@ -533,10 +497,16 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
     </div>
   </div>
 
-  <!-- STEP 21: Profile (has Continuar) -->
-  <div class="step" data-step="21" data-type="profile" data-total="24">
+  <!-- STEP 19: Profile (has Continuar) -->
+  <div class="step" data-step="19" data-type="profile" data-total="22">
     <p class="step-title">Seu perfil preliminar</p>
     <p class="step-subtitle">Com base nas suas respostas até o momento.</p>
+
+    <!-- Imagem de dor -->
+    <div style="margin-bottom:16px;text-align:center;">
+      <img src="https://i.imgur.com/1OiZnvg.png" style="width:100%;max-width:260px;border-radius:12px;">
+    </div>
+
     <div class="profile-card">
       <div class="p-header">
         <div class="p-avatar">👤</div>
@@ -567,29 +537,36 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
         <div class="score-row" style="--target-width:65%;">
           <div class="score-top"><span class="score-nm">Saúde Circulatória</span><span class="score-val" style="color:#f59e0b;">65</span></div>
           <div class="bar-bg"><div class="bar-fill" style="background:linear-gradient(90deg,#f59e0b,#ef4444);"></div></div>
-          <p class="score-st mid">Precisa de melhorias</p>
+          <p class="score-st mid">Sinais claros de deterioração</p>
         </div>
         <div class="score-row" style="--target-width:44%;">
           <div class="score-top"><span class="score-nm">Função nervosa</span><span class="score-val" style="color:#ef4444;">44</span></div>
           <div class="bar-bg"><div class="bar-fill" style="background:linear-gradient(90deg,#ef4444,#dc2626);"></div></div>
-          <p class="score-st bad">Comprometido</p>
+          <p class="score-st bad">Função nervosa comprometida</p>
         </div>
         <div class="score-row" style="--target-width:41%;">
           <div class="score-top"><span class="score-nm">Qualidade do sono</span><span class="score-val" style="color:#ef4444;">41</span></div>
           <div class="bar-bg"><div class="bar-fill" style="background:linear-gradient(90deg,#ef4444,#dc2626);"></div></div>
-          <p class="score-st bad">Pobre</p>
+          <p class="score-st bad">Sono afetado por crises noturnas</p>
         </div>
       </div>
     </div>
+
+    <!-- Alerta -->
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:14px 16px;margin-top:16px;width:100%;">
+      <p style="font-size:10px;color:#ef4444;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px;">⚠️ Atenção</p>
+      <p style="font-size:13px;color:#ccc;line-height:1.5;">Com base no seu perfil, existe um risco real de progressão dos sintomas nas próximas semanas caso nenhuma ação seja tomada.</p>
+    </div>
+
     <div class="good-news" id="profile-good-news" style="opacity:0;transition:opacity .5s ease 2.5s;">
       <p class="gn-lbl">💡 Boas Notícias</p>
-      <p class="gn-txt">Você é um forte candidato para a restauração nervosa natural. <strong>84% das pessoas com o seu perfil</strong> relatam melhora significativa em 14 dias.</p>
+      <p class="gn-txt">Mesmo assim, há uma saída. Pessoas com o seu perfil responderam muito bem a um protocolo específico de reprogramação neural, com melhora progressiva já nas primeiras semanas.</p>
     </div>
     <button class="btn-continuar" id="profile-btn" style="opacity:0;transition:opacity .4s ease 3s;pointer-events:none;">Continuar minha avaliação →</button>
   </div>
 
-  <!-- STEP 22: Money spent -->
-  <div class="step" data-step="22" data-type="single" data-total="24">
+  <!-- STEP 20: Money spent -->
+  <div class="step" data-step="20" data-type="single" data-total="22">
     <p class="step-title">Quanto você já gastou tentando resolver seu desconforto nervoso?</p>
     <p class="step-subtitle">Tratamentos, médicos e medicamentos combinados.</p>
     <div class="options-list">
@@ -605,8 +582,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
     </div>
   </div>
 
-  <!-- STEP 23: Timeline -->
-  <div class="step" data-step="23" data-type="single" data-total="24">
+  <!-- STEP 21: Timeline -->
+  <div class="step" data-step="21" data-type="single" data-total="22">
     <p class="step-title">Em quanto tempo você gostaria de ver os resultados?</p>
     <p class="step-subtitle">&nbsp;</p>
     <div class="options-list">
@@ -626,8 +603,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
     </div>
   </div>
 
-  <!-- STEP 24: Commitment -->
-  <div class="step" data-step="24" data-type="single" data-total="24">
+  <!-- STEP 22: Commitment -->
+  <div class="step" data-step="22" data-type="single" data-total="22">
     <p class="step-title">Se existisse uma solução natural que funcionasse para 80% das pessoas como você...</p>
     <p class="step-subtitle">Qual seria o seu nível de comprometimento em tentar?</p>
     <div class="options-list">
@@ -638,8 +615,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
     </div>
   </div>
 
-  <!-- STEP 25: Loading -->
-  <div class="step" data-step="25" data-type="loading" data-total="24">
+  <!-- STEP 23: Loading -->
+  <div class="step" data-step="23" data-type="loading" data-total="22">
     <div class="ld-wrap">
       <span class="ld-icon">🔬</span>
       <p class="ld-title">Carregando...</p>
@@ -649,11 +626,24 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
     </div>
   </div>
 
-  <!-- STEP 26: Presenting NeuroFlow App -->
-  <div class="step" data-step="26" data-type="final" data-total="24">
-    <span class="badge">App de Treino Cognitivo &amp; Alívio da Neuropatia</span>
+  <!-- STEP 24: Presenting NeuroFlow App -->
+  <div class="step" data-step="24" data-type="final" data-total="22">
+    <span class="badge">Protocolo NeuroFlow™ de Reequilíbrio Nervoso</span>
     <p class="final-title">Apresentando o NeuroFlow™</p>
-    <p class="final-sub">Um app completo criado especificamente para o seu perfil.</p>
+    <p class="final-sub">Um protocolo completo criado especificamente para o seu perfil.</p>
+
+    <!-- Mecanismo -->
+    <div style="background:#111;border:1px solid rgba(255,107,0,.2);border-radius:16px;padding:20px;width:100%;margin-bottom:18px;">
+      <p style="font-size:10px;color:var(--accent);font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;">🧬 O Mecanismo</p>
+      <p style="font-size:14px;color:#ddd;line-height:1.7;margin-bottom:10px;">A maioria das pessoas acredita que a neuropatia está apenas nos nervos... mas estudos recentes mostram que o problema também está na forma como o <strong style="color:#fff;">cérebro interpreta esses sinais.</strong></p>
+      <p style="font-size:14px;color:#ddd;line-height:1.7;margin-bottom:10px;">Quando esse padrão fica desregulado, o corpo continua enviando dor mesmo sem necessidade.</p>
+      <p style="font-size:14px;color:var(--accent);line-height:1.7;font-weight:600;">O NeuroFlow™ atua justamente nisso: ajudando a reprogramar essa resposta, reduzindo a intensidade da dor de forma progressiva.</p>
+    </div>
+
+    <!-- Imagem científica -->
+    <div style="margin:0 0 18px;text-align:center;">
+      <img src="https://i.imgur.com/r5PJiJ8.png" style="width:100%;max-width:280px;border-radius:12px;">
+    </div>
 
     <!-- App modules grid -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:18px;">
@@ -698,11 +688,11 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
       <div class="feat-row"><span class="feat-ck">✓</span><span>Acompanhamento de progresso com gráficos e metas</span></div>
       <div class="feat-row"><span class="feat-ck">✓</span><span>Sem medicamentos. Sem efeitos colaterais. Garantia de 30 dias.</span></div>
     </div>
-    <button class="cta-btn" onclick="goToStep(27)">Quero meu plano agora →</button>
+    <button class="cta-btn" onclick="goToStep(25)">Quero meu plano agora →</button>
   </div>
 
-  <!-- STEP 27: Treatment Summary -->
-  <div class="step" data-step="27" data-type="final" data-total="24">
+  <!-- STEP 25: Treatment Summary -->
+  <div class="step" data-step="25" data-type="final" data-total="22">
     <p class="final-title" style="margin-bottom:6px;">Seu plano personalizado<br>está pronto</p>
     <p class="final-sub">Com base nas suas respostas, o NeuroFlow™ montou o seguinte programa.</p>
 
@@ -760,11 +750,11 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
       <div class="goal-row"><span class="goal-ck">✓</span>Reduzir dependência de medicamentos com orientação médica</div>
       <div class="goal-row"><span class="goal-ck">✓</span>Acompanhar e ver seu progresso real, semana a semana</div>
     </div>
-    <button class="cta-btn" onclick="goToStep(28)">Quero acessar o NeuroFlow™ →</button>
+    <button class="cta-btn" onclick="goToStep(26)">Quero acessar o NeuroFlow™ →</button>
   </div>
 
-  <!-- STEP 28: Access + Testimonials -->
-  <div class="step" data-step="28" data-type="final" data-total="24">
+  <!-- STEP 26: Access + Testimonials -->
+  <div class="step" data-step="26" data-type="final" data-total="22">
     <p class="final-title">Acesso Instantâneo ao<br>NeuroFlow™</p>
     <p class="final-sub">O app completo de treino cognitivo e alívio da neuropatia.</p>
 
@@ -832,7 +822,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
 </div><!-- end quiz-container -->
 
 <script>
-const TOTAL_QUIZ_STEPS = 24; // quiz steps (not counting final pages)
+const TOTAL_QUIZ_STEPS = 22; // quiz steps (not counting final pages)
 let currentStep = 1;
 
 function getStep(n){ return document.querySelector(`.step[data-step="${n}"]`); }
@@ -861,7 +851,7 @@ function goToStep(n){
   updateProgress();
   window.scrollTo({top:0,behavior:'smooth'});
   if(next.dataset.type === 'loading') startLoading();
-  if(n === 21) triggerProfileAnimation();
+  if(n === 19) triggerProfileAnimation();
 }
 
 function triggerProfileAnimation(){
@@ -917,7 +907,7 @@ function startLoading(){
   const label = document.getElementById('ld-pct');
   const iv = setInterval(()=>{
     pct += Math.random() * 3 + 1;
-    if(pct >= 100){ pct = 100; clearInterval(iv); setTimeout(()=>goToStep(26), 400); }
+    if(pct >= 100){ pct = 100; clearInterval(iv); setTimeout(()=>goToStep(24), 400); }
     fill.style.width = Math.min(pct,100) + '%';
     label.textContent = Math.floor(Math.min(pct,100)) + '%';
   }, 60);
