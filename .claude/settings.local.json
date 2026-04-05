@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(copy \"C:\\\\Users\\\\satoshi\\\\Downloads\\\\Ana Kimoro Audio 1.mp3\" \"C:\\\\Users\\\\satoshi\\\\Downloads\\\\NEUROFLOW\\\\audio-dra-ana.mp3\")",
+      "Read(//mnt/**)",
+      "Read(//c//**)",
+      "Read(//c/Users/**)",
+      "Bash(cmd.exe /c \"dir C:\\\\Users\\\\satoshi\\\\Downloads\\\\*.mp3 2>nul\")",
+      "Bash(find /mnt -name *.mp3)",
+      "Bash(cmd.exe /c \"copy \"\"C:\\\\Users\\\\satoshi\\\\Downloads\\\\Ana Kimoro Audio 1.mp3\"\" \"\"C:\\\\Users\\\\satoshi\\\\Downloads\\\\NEUROFLOW\\\\audio-dra-ana.mp3\"\"\")",
+      "Bash(cmd.exe /c \"dir \"\"C:\\\\Users\\\\satoshi\\\\Downloads\\\\NEUROFLOW\\\\audio-dra-ana.mp3\"\"\")",
+      "Bash(cmd.exe /c \"dir \"\"C:\\\\Users\\\\satoshi\\\\Downloads\\\\NEUROFLOW\\\\\"\")",
+      "Bash(cmd.exe /c \"dir C:\\\\Users\\\\satoshi\\\\Downloads\\\\NEUROFLOW\")",
+      "Bash(powershell.exe -Command \"Copy-Item ''C:\\\\Users\\\\satoshi\\\\Downloads\\\\Ana Kimoro Audio 1.mp3'' ''C:\\\\Users\\\\satoshi\\\\Downloads\\\\NEUROFLOW\\\\audio-dra-ana.mp3'' -ErrorAction SilentlyContinue; if \\(Test-Path ''C:\\\\Users\\\\satoshi\\\\Downloads\\\\NEUROFLOW\\\\audio-dra-ana.mp3''\\) { ''SUCCESS'' } else { ''FAILED - checking source''; Test-Path ''C:\\\\Users\\\\satoshi\\\\Downloads\\\\Ana Kimoro Audio 1.mp3'' }\")",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}
